@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flag Friday 🏁</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .player-select {
+            margin-bottom: 20px;
+        }
+
+        .player-select label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        .player-select select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            background: white;
+        }
+
+        .flag-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .flag-display {
+            width: 100%;
+            max-width: 300px;
+            height: 200px;
+            margin: 0 auto 20px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 120px;
+            background: #f5f5f5;
+            border: 3px solid #ddd;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .flag-display.blurred {
+            filter: blur(20px);
+            cursor: pointer;
+        }
+
+        .reveal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .reveal-overlay:hover {
+            background: rgba(0,0,0,0.8);
+        }
+
+        .reveal-overlay .icon {
+            font-size: 60px;
+            margin-bottom: 10px;
+        }
+
+        .timer {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .guess-form {
+            margin-top: 20px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .guess-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .guess-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .autocomplete-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #667eea;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .autocomplete-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .autocomplete-item:hover {
+            background: #f0f0f0;
+        }
+
+        .autocomplete-item.selected {
+            background: #667eea;
+            color: white;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status-message {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-weight: 600;
+        }
+
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .leaderboard {
+            margin-top: 20px;
+        }
+
+        .leaderboard h2 {
+            margin-bottom: 15px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: transform 0.2s;
+        }
+
+        .leaderboard-item:hover {
+            transform: translateX(5px);
+        }
+
+        .leaderboard-item.winner {
+            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+            color: white;
+        }
+
+        .rank {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-right: 15px;
+            min-width: 40px;
+        }
+
+        .rank.first { color: #FFD700; }
+        .rank.second { color: #C0C0C0; }
+        .rank.third { color: #CD7F32; }
+
+        .player-info {
+            flex: 1;
+        }
+
+        .player-name {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .player-time {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+
+        .player-stats {
+            text-align: right;
+            font-weight: 600;
+        }
+
+        .round-status {
+            text-align: center;
+            padding: 10px;
+            background: #fff3cd;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: #856404;
+        }
+
+        .round-status.closed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .flag-display {
+                height: 150px;
+                font-size: 80px;
+            }
+        }
+
+        #nameInput {
+            margin-bottom: 0;
+        }
+
+        #playerHeader {
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        #switchPlayerInGame:hover {
+            background: #f0f0f0;
+        }
+
+        #nameInputScreen h2,
+        #welcomeBackScreen h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+    </style>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏁 Flag Friday</h1>
+            <div class="subtitle">Guess the flag. Beat the clock.</div>
+        </div>
+
+        <!-- Name Input Screen (new players) -->
+        <div id="nameInputScreen" class="card" style="display: none;">
+            <h2>Welcome to Flag Friday!</h2>
+            <p style="margin: 15px 0;">What's your name?</p>
+            <input type="text" id="nameInput" class="guess-input" placeholder="Enter your name" />
+            <button id="joinGameBtn" class="submit-btn" style="margin-top: 15px;">Join Game</button>
+            <div id="nameError" class="status-message error" style="display: none; margin-top: 15px;"></div>
+            <p style="margin-top: 15px; font-size: 0.9em; color: #666;">We'll remember you for next time!</p>
+        </div>
+
+        <!-- Welcome Back Screen (returning players) -->
+        <div id="welcomeBackScreen" class="card" style="display: none;">
+            <h2>Welcome back, <span id="returningPlayerName"></span>! 👋</h2>
+            <button id="continueGameBtn" class="submit-btn" style="margin-top: 20px;">Continue to Game</button>
+            <button id="switchPlayerBtn" class="submit-btn" style="margin-top: 10px; background: #6c757d;">Switch Player</button>
+        </div>
+
+        <!-- Game Area Card -->
+        <div class="card">
+            <!-- Player Header (in-game) -->
+            <div id="playerHeader" style="display: none; text-align: center; margin-bottom: 20px; padding: 10px; background: white; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                Playing as: <strong id="currentPlayerDisplay"></strong>
+                <button id="switchPlayerInGame" style="margin-left: 10px; padding: 5px 10px; border: 1px solid #ddd; border-radius: 5px; background: white; cursor: pointer;">⟳ Switch</button>
+            </div>
+
+            <div id="roundStatus" class="round-status"></div>
+
+            <div id="gameArea" style="display: none;">
+                <div class="flag-container">
+                    <div id="flagDisplay" class="flag-display blurred">
+                        <span id="flagEmoji"></span>
+                        <div id="revealOverlay" class="reveal-overlay">
+                            <div class="icon">👁️</div>
+                            <div>Tap to Reveal Flag</div>
+                        </div>
+                    </div>
+                    
+                    <div id="timer" class="timer" style="display: none;">00:00</div>
+                </div>
+
+                <form id="guessForm" class="guess-form" style="display: none;">
+                    <div class="input-group">
+                        <input 
+                            type="text" 
+                            id="guessInput" 
+                            class="guess-input" 
+                            placeholder="Type country name..."
+                            autocomplete="off"
+                        >
+                        <div id="autocompleteList" class="autocomplete-list" style="display: none;"></div>
+                    </div>
+                    <button type="submit" class="submit-btn">Submit Guess</button>
+                </form>
+
+                <div id="statusMessage" class="status-message" style="display: none;"></div>
+            </div>
+        </div>
+
+        <div class="card leaderboard">
+            <h2>🏆 This Week's Leaderboard</h2>
+            <div id="leaderboardList"></div>
+        </div>
+
+        <div class="card leaderboard">
+            <h2>📊 All-Time Stats</h2>
+            <div id="allTimeStats"></div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAdvCmVANvjhDslwFOY6Bj5ykKXQ-YJRyU",
+            authDomain: "flag-friday.firebaseapp.com",
+            databaseURL: "https://flag-friday-default-rtdb.firebaseio.com",
+            projectId: "flag-friday",
+            storageBucket: "flag-friday.firebasestorage.app",
+            messagingSenderId: "567319412010",
+            appId: "1:567319412010:web:cd70d1e97b028e1cad3253"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Country data with flags and names
+        const countries = [
+            { name: "United States", flag: "🇺🇸" },
+            { name: "United Kingdom", flag: "🇬🇧" },
+            { name: "France", flag: "🇫🇷" },
+            { name: "Germany", flag: "🇩🇪" },
+            { name: "Italy", flag: "🇮🇹" },
+            { name: "Spain", flag: "🇪🇸" },
+            { name: "Canada", flag: "🇨🇦" },
+            { name: "Mexico", flag: "🇲🇽" },
+            { name: "Brazil", flag: "🇧🇷" },
+            { name: "Argentina", flag: "🇦🇷" },
+            { name: "Japan", flag: "🇯🇵" },
+            { name: "China", flag: "🇨🇳" },
+            { name: "India", flag: "🇮🇳" },
+            { name: "Australia", flag: "🇦🇺" },
+            { name: "Russia", flag: "🇷🇺" },
+            { name: "South Korea", flag: "🇰🇷" },
+            { name: "Netherlands", flag: "🇳🇱" },
+            { name: "Belgium", flag: "🇧🇪" },
+            { name: "Switzerland", flag: "🇨🇭" },
+            { name: "Sweden", flag: "🇸🇪" },
+            { name: "Norway", flag: "🇳🇴" },
+            { name: "Denmark", flag: "🇩🇰" },
+            { name: "Finland", flag: "🇫🇮" },
+            { name: "Poland", flag: "🇵🇱" },
+            { name: "Greece", flag: "🇬🇷" },
+            { name: "Turkey", flag: "🇹🇷" },
+            { name: "Egypt", flag: "🇪🇬" },
+            { name: "South Africa", flag: "🇿🇦" },
+            { name: "Nigeria", flag: "🇳🇬" },
+            { name: "Kenya", flag: "🇰🇪" },
+            { name: "Thailand", flag: "🇹🇭" },
+            { name: "Vietnam", flag: "🇻🇳" },
+            { name: "Philippines", flag: "🇵🇭" },
+            { name: "Indonesia", flag: "🇮🇩" },
+            { name: "Malaysia", flag: "🇲🇾" },
+            { name: "Singapore", flag: "🇸🇬" },
+            { name: "New Zealand", flag: "🇳🇿" },
+            { name: "Ireland", flag: "🇮🇪" },
+            { name: "Portugal", flag: "🇵🇹" },
+            { name: "Austria", flag: "🇦🇹" },
+            { name: "Czech Republic", flag: "🇨🇿" },
+            { name: "Hungary", flag: "🇭🇺" },
+            { name: "Romania", flag: "🇷🇴" },
+            { name: "Ukraine", flag: "🇺🇦" },
+            { name: "Chile", flag: "🇨🇱" },
+            { name: "Peru", flag: "🇵🇪" },
+            { name: "Colombia", flag: "🇨🇴" },
+            { name: "Venezuela", flag: "🇻🇪" },
+            { name: "Saudi Arabia", flag: "🇸🇦" },
+            { name: "United Arab Emirates", flag: "🇦🇪" },
+            { name: "Israel", flag: "🇮🇱" },
+            { name: "Pakistan", flag: "🇵🇰" },
+            { name: "Bangladesh", flag: "🇧🇩" },
+            { name: "Iceland", flag: "🇮🇸" },
+            { name: "Croatia", flag: "🇭🇷" },
+            { name: "Serbia", flag: "🇷🇸" },
+            { name: "Jamaica", flag: "🇯🇲" },
+            { name: "Cuba", flag: "🇨🇺" },
+            { name: "Morocco", flag: "🇲🇦" },
+            { name: "Algeria", flag: "🇩🇿" }
+        ];
+
+        // State management
+        let currentPlayer = '';
+        let currentFlag = null;
+        let timerInterval = null;
+        let startTime = null;
+        let revealed = false;
+        let guessed = false;
+        let selectedIndex = -1;
+        let filteredCountries = [];
+        let attemptCount = 0; // Track number of guess attempts
+
+        // Cookie utilities
+        function setCookie(name, value, days) {
+            const expires = new Date();
+            expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+            document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
+        }
+
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for(let i = 0; i < ca.length; i++) {
+                let c = ca[i].trim();
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length);
+            }
+            return null;
+        }
+
+        function deleteCookie(name) {
+            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/`;
+        }
+
+        // Capitalize name (first letter of each word uppercase)
+        function capitalizeName(name) {
+            return name.trim().split(' ').map(word =>
+                word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+            ).join(' ');
+        }
+
+        // Player name validation
+        async function validatePlayerName(name) {
+            const trimmed = name.trim();
+            if (!trimmed) return { valid: false, error: "Name cannot be empty" };
+            if (trimmed.length < 2) return { valid: false, error: "Name must be at least 2 characters" };
+            if (trimmed.length > 20) return { valid: false, error: "Name must be 20 characters or less" };
+            if (!/^[a-zA-Z0-9\s\-']+$/.test(trimmed)) {
+                return { valid: false, error: "Only letters, numbers, spaces, hyphens, and apostrophes allowed" };
+            }
+
+            // Capitalize the name
+            const capitalizedName = capitalizeName(trimmed);
+
+            // Check for uniqueness (case-insensitive) in Firebase
+            const gameData = await getGameData();
+            const existingNames = Object.keys(gameData.allTimeStats || {});
+            const nameExists = existingNames.some(existingName =>
+                existingName.toLowerCase() === capitalizedName.toLowerCase()
+            );
+
+            if (nameExists) {
+                return { valid: false, error: `The name "${capitalizedName}" is already taken` };
+            }
+
+            return { valid: true, name: capitalizedName };
+        }
+
+        // Get elements
+        const gameArea = document.getElementById('gameArea');
+        const flagDisplay = document.getElementById('flagDisplay');
+        const flagEmoji = document.getElementById('flagEmoji');
+        const revealOverlay = document.getElementById('revealOverlay');
+        const timer = document.getElementById('timer');
+        const guessForm = document.getElementById('guessForm');
+        const guessInput = document.getElementById('guessInput');
+        const autocompleteList = document.getElementById('autocompleteList');
+        const statusMessage = document.getElementById('statusMessage');
+        const roundStatus = document.getElementById('roundStatus');
+        const leaderboardList = document.getElementById('leaderboardList');
+        const allTimeStats = document.getElementById('allTimeStats');
+
+        // Initialize game
+        async function initGame() {
+            const gameData = await getGameData();
+            updateRoundStatus();
+            await updateLeaderboards();
+            checkForPlayer(); // Check for returning player
+
+            // Listen for leaderboard changes (real-time updates)
+            database.ref('flag-friday').on('value', (snapshot) => {
+                if (currentPlayer) {
+                    updateLeaderboards();
+                }
+            });
+        }
+
+        // Get current Friday's date key
+        function getFridayKey() {
+            const now = new Date();
+            const day = now.getDay();
+            const diff = day >= 5 ? 5 - day : -(day + 2); // Get to Friday
+            const friday = new Date(now);
+            friday.setDate(now.getDate() + diff);
+            return `${friday.getFullYear()}-${friday.getMonth()}-${friday.getDate()}`;
+        }
+
+        // Check if round is open (Friday only)
+        function isRoundOpen() {
+            const now = new Date();
+            const day = now.getDay();
+            return day === 5; // 5 = Friday
+        }
+
+        // Get or create game data (Firebase version)
+        async function getGameData() {
+            const fridayKey = getFridayKey();
+            const snapshot = await database.ref('flag-friday').once('value');
+            let gameData = snapshot.val() || {};
+
+            if (!gameData.weeks) gameData.weeks = {};
+            if (!gameData.allTimeStats) gameData.allTimeStats = {};
+
+            if (!gameData.weeks[fridayKey]) {
+                // New week - select random flag
+                const randomFlag = countries[Math.floor(Math.random() * countries.length)];
+                gameData.weeks[fridayKey] = {
+                    flag: randomFlag,
+                    guesses: {}
+                };
+                await database.ref(`flag-friday/weeks/${fridayKey}`).set(gameData.weeks[fridayKey]);
+            }
+
+            return gameData;
+        }
+
+        // Save game data (Firebase version)
+        async function saveGameData(gameData) {
+            await database.ref('flag-friday').set(gameData);
+        }
+
+        // Screen flow functions
+        function checkForPlayer() {
+            const playerName = getCookie('flagFridayPlayer');
+            if (playerName) {
+                // Returning player - keep existing name as-is
+                currentPlayer = playerName;
+                showWelcomeBackScreen();
+            } else {
+                // New player
+                showNameInputScreen();
+            }
+        }
+
+        function showNameInputScreen() {
+            document.getElementById('nameInputScreen').style.display = 'block';
+            document.getElementById('welcomeBackScreen').style.display = 'none';
+            document.getElementById('gameArea').style.display = 'none';
+            document.getElementById('playerHeader').style.display = 'none';
+            document.getElementById('nameInput').focus();
+        }
+
+        function showWelcomeBackScreen() {
+            document.getElementById('returningPlayerName').textContent = currentPlayer;
+            document.getElementById('welcomeBackScreen').style.display = 'block';
+            document.getElementById('nameInputScreen').style.display = 'none';
+            document.getElementById('gameArea').style.display = 'none';
+            document.getElementById('playerHeader').style.display = 'none';
+        }
+
+        async function showGameInterface() {
+            document.getElementById('currentPlayerDisplay').textContent = currentPlayer;
+            document.getElementById('playerHeader').style.display = 'block';
+            document.getElementById('nameInputScreen').style.display = 'none';
+            document.getElementById('welcomeBackScreen').style.display = 'none';
+            await startGame();
+        }
+
+        async function createNewPlayer(name) {
+            const gameData = await getGameData();
+            if (!gameData.allTimeStats[name]) {
+                gameData.allTimeStats[name] = { wins: 0, totalGuesses: 0 };
+                await saveGameData(gameData);
+            }
+        }
+
+        function switchPlayer() {
+            if (confirm('Are you sure you want to switch players?\n(Your game progress is saved)')) {
+                deleteCookie('flagFridayPlayer');
+                currentPlayer = '';
+                revealed = false;
+                guessed = false;
+                clearInterval(timerInterval);
+                showNameInputScreen();
+            }
+        }
+
+        // Update round status
+        function updateRoundStatus() {
+            if (isRoundOpen()) {
+                roundStatus.className = 'round-status';
+                roundStatus.textContent = '✅ Round Open - Submissions close at midnight!';
+            } else {
+                roundStatus.className = 'round-status closed';
+                roundStatus.textContent = '🔒 Round Closed - Come back Friday!';
+            }
+        }
+
+        // Start game for player
+        async function startGame() {
+            gameArea.style.display = 'block';
+
+            const gameData = await getGameData();
+            const fridayKey = getFridayKey();
+            currentFlag = gameData.weeks[fridayKey].flag;
+
+            flagEmoji.textContent = currentFlag.flag;
+
+            // Check if player has already guessed correctly
+            const playerGuess = gameData.weeks[fridayKey].guesses?.[currentPlayer];
+
+            if (playerGuess && playerGuess.correct) {
+                // Player already completed this week's flag
+                revealed = true;
+                guessed = true;
+                flagDisplay.classList.remove('blurred');
+                revealOverlay.style.display = 'none';
+                timer.style.display = 'block';
+                timer.textContent = formatTime(playerGuess.time);
+
+                const attemptText = playerGuess.attempts === 1 ? '1 attempt' : `${playerGuess.attempts} attempts`;
+                showStatus(`You got it in ${formatTime(playerGuess.time)} with ${attemptText}! 🎉`, 'success');
+
+                guessForm.style.display = 'none';
+            } else {
+                // Fresh start - reset for new game
+                revealed = false;
+                guessed = false;
+                attemptCount = 0; // Reset attempt counter
+                flagDisplay.classList.add('blurred');
+                revealOverlay.style.display = 'flex';
+                timer.style.display = 'none';
+                guessForm.style.display = 'none';
+                statusMessage.style.display = 'none';
+            }
+        }
+
+        // Reveal flag
+        revealOverlay.addEventListener('click', () => {
+            if (!isRoundOpen()) {
+                showStatus('Round is closed! Come back Friday.', 'error');
+                return;
+            }
+
+            revealed = true;
+            attemptCount = 0; // Initialize attempt counter
+            flagDisplay.classList.remove('blurred');
+            revealOverlay.style.display = 'none';
+            timer.style.display = 'block';
+            guessForm.style.display = 'block';
+
+            // Start timer
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 100);
+
+            guessInput.focus();
+        });
+
+        // Update timer
+        function updateTimer() {
+            const elapsed = Date.now() - startTime;
+            timer.textContent = formatTime(elapsed);
+        }
+
+        // Format time (milliseconds to MM:SS.s)
+        function formatTime(ms) {
+            const totalSeconds = Math.floor(ms / 1000);
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            const deciseconds = Math.floor((ms % 1000) / 100);
+            return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${deciseconds}`;
+        }
+
+        // Autocomplete functionality
+        guessInput.addEventListener('input', (e) => {
+            const value = e.target.value.toLowerCase();
+            
+            if (value.length === 0) {
+                autocompleteList.style.display = 'none';
+                filteredCountries = [];
+                selectedIndex = -1;
+                return;
+            }
+            
+            filteredCountries = countries.filter(c => 
+                c.name.toLowerCase().includes(value)
+            ).slice(0, 8);
+            
+            if (filteredCountries.length > 0) {
+                autocompleteList.innerHTML = filteredCountries
+                    .map((c, i) => `<div class="autocomplete-item" data-index="${i}">${c.flag} ${c.name}</div>`)
+                    .join('');
+                autocompleteList.style.display = 'block';
+                selectedIndex = -1;
+            } else {
+                autocompleteList.style.display = 'none';
+            }
+        });
+
+        // Keyboard navigation for autocomplete
+        guessInput.addEventListener('keydown', (e) => {
+            const autocompleteVisible = autocompleteList.style.display !== 'none';
+
+            if (!autocompleteVisible) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectedIndex = Math.min(selectedIndex + 1, filteredCountries.length - 1);
+                updateAutocompleteSelection();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedIndex = Math.max(selectedIndex - 1, -1);
+                updateAutocompleteSelection();
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                // If nothing selected with arrows, select first item (index 0)
+                const indexToSelect = selectedIndex >= 0 ? selectedIndex : 0;
+                if (filteredCountries[indexToSelect]) {
+                    selectCountry(filteredCountries[indexToSelect].name);
+                }
+            }
+        });
+
+        function updateAutocompleteSelection() {
+            const items = autocompleteList.querySelectorAll('.autocomplete-item');
+            items.forEach((item, i) => {
+                item.classList.toggle('selected', i === selectedIndex);
+            });
+            if (selectedIndex >= 0) {
+                items[selectedIndex].scrollIntoView({ block: 'nearest' });
+            }
+        }
+
+        // Click on autocomplete item
+        autocompleteList.addEventListener('click', (e) => {
+            const item = e.target.closest('.autocomplete-item');
+            if (item) {
+                const index = parseInt(item.dataset.index);
+                selectCountry(filteredCountries[index].name);
+            }
+        });
+
+        function selectCountry(name) {
+            guessInput.value = name;
+            autocompleteList.style.display = 'none';
+            filteredCountries = [];
+            selectedIndex = -1;
+        }
+
+        // Close autocomplete when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.input-group')) {
+                autocompleteList.style.display = 'none';
+            }
+        });
+
+        // Submit guess
+        guessForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!isRoundOpen()) {
+                showStatus('Round is closed! Come back Friday.', 'error');
+                return;
+            }
+
+            if (guessed) return;
+
+            const guess = guessInput.value.trim();
+            if (!guess) return;
+
+            // Increment attempt counter
+            attemptCount++;
+
+            // Check if correct
+            const correct = guess.toLowerCase() === currentFlag.name.toLowerCase();
+
+            if (correct) {
+                // CORRECT GUESS - Stop timer and complete game
+                clearInterval(timerInterval);
+                const finalTime = Date.now() - startTime;
+
+                // Save successful guess with attempts
+                const gameData = await getGameData();
+                const fridayKey = getFridayKey();
+                if (!gameData.weeks[fridayKey].guesses) {
+                    gameData.weeks[fridayKey].guesses = {};
+                }
+                gameData.weeks[fridayKey].guesses[currentPlayer] = {
+                    attempts: attemptCount,
+                    correct: true,
+                    time: finalTime,
+                    timestamp: Date.now()
+                };
+
+                // Update all-time stats
+                if (!gameData.allTimeStats[currentPlayer]) {
+                    gameData.allTimeStats[currentPlayer] = { wins: 0, totalGuesses: 0 };
+                }
+                gameData.allTimeStats[currentPlayer].totalGuesses++;
+                gameData.allTimeStats[currentPlayer].wins++;
+
+                await saveGameData(gameData);
+
+                guessed = true;
+                guessForm.style.display = 'none';
+
+                const attemptText = attemptCount === 1 ? '1 attempt' : `${attemptCount} attempts`;
+                showStatus(`Correct! You got it in ${formatTime(finalTime)} with ${attemptText}! 🎉`, 'success');
+
+                await updateLeaderboards();
+            } else {
+                // WRONG GUESS - Let them try again
+                showStatus(`Not ${guess}. Try again! (Attempt ${attemptCount})`, 'info');
+                guessInput.value = '';
+                guessInput.focus();
+            }
+        });
+
+        // Show status message
+        function showStatus(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message ${type}`;
+            statusMessage.style.display = 'block';
+        }
+
+        // Update leaderboards
+        async function updateLeaderboards() {
+            const gameData = await getGameData();
+            const fridayKey = getFridayKey();
+            const weekData = gameData.weeks[fridayKey];
+            
+            // This week's leaderboard
+            const weekGuesses = Object.entries(weekData?.guesses || {})
+                .filter(([_, data]) => data.correct)
+                .sort((a, b) => a[1].time - b[1].time);
+            
+            if (weekGuesses.length === 0) {
+                leaderboardList.innerHTML = '<div style="text-align: center; color: #999; padding: 20px;">No correct guesses yet!</div>';
+            } else {
+                leaderboardList.innerHTML = weekGuesses.map(([player, data], index) => {
+                    const rankClass = index === 0 ? 'first' : index === 1 ? 'second' : index === 2 ? 'third' : '';
+                    const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
+                    const attemptText = data.attempts ? (data.attempts === 1 ? '1 try' : `${data.attempts} tries`) : '';
+                    const timeDisplay = attemptText ? `${formatTime(data.time)} • ${attemptText}` : formatTime(data.time);
+                    return `
+                        <div class="leaderboard-item ${index === 0 ? 'winner' : ''}">
+                            <div class="rank ${rankClass}">${medal || (index + 1)}</div>
+                            <div class="player-info">
+                                <div class="player-name">${player}</div>
+                                <div class="player-time">${timeDisplay}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            // All-time stats
+            const allTimeData = Object.entries(gameData.allTimeStats || {})
+                .sort((a, b) => b[1].wins - a[1].wins);
+            
+            if (allTimeData.length === 0) {
+                allTimeStats.innerHTML = '<div style="text-align: center; color: #999; padding: 20px;">No stats yet!</div>';
+            } else {
+                allTimeStats.innerHTML = allTimeData.map(([player, stats], index) => {
+                    const rankClass = index === 0 ? 'first' : index === 1 ? 'second' : index === 2 ? 'third' : '';
+                    return `
+                        <div class="leaderboard-item">
+                            <div class="rank ${rankClass}">${index + 1}</div>
+                            <div class="player-info">
+                                <div class="player-name">${player}</div>
+                            </div>
+                            <div class="player-stats">
+                                ${stats.wins} wins
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        // Event Listeners
+
+        // Name input handling
+        document.getElementById('joinGameBtn').addEventListener('click', async () => {
+            const name = document.getElementById('nameInput').value;
+            const validation = await validatePlayerName(name);
+
+            if (!validation.valid) {
+                const errorDiv = document.getElementById('nameError');
+                errorDiv.textContent = validation.error;
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            currentPlayer = validation.name;
+            setCookie('flagFridayPlayer', currentPlayer, 365);
+            await createNewPlayer(currentPlayer);
+            await showGameInterface();
+        });
+
+        // Enter key support for name input
+        document.getElementById('nameInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('joinGameBtn').click();
+            }
+        });
+
+        // Welcome back - continue button
+        document.getElementById('continueGameBtn').addEventListener('click', () => {
+            showGameInterface();
+        });
+
+        // Welcome back - switch player button
+        document.getElementById('switchPlayerBtn').addEventListener('click', () => {
+            switchPlayer();
+        });
+
+        // In-game switch player button
+        document.getElementById('switchPlayerInGame').addEventListener('click', () => {
+            switchPlayer();
+        });
+
+        // Initialize on load
+        initGame();
+        
+        // Update round status every minute
+        setInterval(updateRoundStatus, 60000);
+    </script>
+</body>
+</html>
