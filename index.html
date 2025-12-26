@@ -321,10 +321,6 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        #switchPlayerInGame:hover {
-            background: #f0f0f0;
-        }
-
         #nameInputScreen h2,
         #welcomeBackScreen h2 {
             color: #333;
@@ -357,7 +353,6 @@
         <div id="welcomeBackScreen" class="card" style="display: none;">
             <h2>Welcome back, <span id="returningPlayerName"></span>! 👋</h2>
             <button id="continueGameBtn" class="submit-btn" style="margin-top: 20px;">Continue to Game</button>
-            <button id="switchPlayerBtn" class="submit-btn" style="margin-top: 10px; background: #6c757d;">Switch Player</button>
         </div>
 
         <!-- Game Area Card -->
@@ -365,7 +360,6 @@
             <!-- Player Header (in-game) -->
             <div id="playerHeader" style="display: none; text-align: center; margin-bottom: 20px; padding: 10px; background: white; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
                 Playing as: <strong id="currentPlayerDisplay"></strong>
-                <button id="switchPlayerInGame" style="margin-left: 10px; padding: 5px 10px; border: 1px solid #ddd; border-radius: 5px; background: white; cursor: pointer;">⟳ Switch</button>
             </div>
 
             <div id="roundStatus" class="round-status"></div>
@@ -673,17 +667,6 @@
             if (!gameData.allTimeStats[name]) {
                 gameData.allTimeStats[name] = { wins: 0, totalGuesses: 0 };
                 await saveGameData(gameData);
-            }
-        }
-
-        function switchPlayer() {
-            if (confirm('Are you sure you want to switch players?\n(Your game progress is saved)')) {
-                deleteCookie('flagFridayPlayer');
-                currentPlayer = '';
-                revealed = false;
-                guessed = false;
-                clearInterval(timerInterval);
-                showNameInputScreen();
             }
         }
 
@@ -1010,16 +993,6 @@
         // Welcome back - continue button
         document.getElementById('continueGameBtn').addEventListener('click', () => {
             showGameInterface();
-        });
-
-        // Welcome back - switch player button
-        document.getElementById('switchPlayerBtn').addEventListener('click', () => {
-            switchPlayer();
-        });
-
-        // In-game switch player button
-        document.getElementById('switchPlayerInGame').addEventListener('click', () => {
-            switchPlayer();
         });
 
         // Initialize on load
