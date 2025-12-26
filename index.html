@@ -773,7 +773,7 @@
             
             if (filteredCountries.length > 0) {
                 autocompleteList.innerHTML = filteredCountries
-                    .map((c, i) => `<div class="autocomplete-item" data-index="${i}">${c.flag} ${c.name}</div>`)
+                    .map((c, i) => `<div class="autocomplete-item" data-index="${i}">${c.name}</div>`)
                     .join('');
                 autocompleteList.style.display = 'block';
                 selectedIndex = -1;
